@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Siswa;
 use App\Models\Ruangan;
 use App\Models\JawabanUjian;
@@ -57,6 +58,76 @@ class DashboardController extends Controller
         return Inertia::render('Admin/Wawancara', [
             'siswa' => $siswa,
             'jurusan' => $jurusan
+        ]);
+    }
+
+    public function rangkingPage(Request $request)
+    {
+        $adminId = $request->session()->get('admin_id');
+        $admin = \App\Models\Admin::find($adminId);
+        $allowedUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
+
+        if (!$admin || !in_array($admin->username, $allowedUsers)) {
+            return redirect()->route('admin.dashboard')->with('error', 'Anda tidak memiliki akses ke halaman Rangking.');
+        }
+
+        $siswa = Siswa::with(['ruangan', 'jurusan1', 'jurusan2', 'hasilUjian'])->get();
+        $jurusan = \App\Models\Jurusan::all();
+
+        return Inertia::render('Admin/Rangking', [
+            'siswa' => $siswa,
+            'jurusan' => $jurusan
+        ]);
+    }
+
+    public function updateNilaiRangking(Request $request, Siswa $siswa)
+    {
+        $adminId = $request->session()->get('admin_id');
+        $admin = \App\Models\Admin::find($adminId);
+        $allowedUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
+
+        if (!$admin || !in_array($admin->username, $allowedUsers)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'jurusan_id' => 'required|exists:jurusan,id',
+            'score_ujian' => 'nullable|numeric|min:0|max:100',
+            'nilai_wawancara' => 'nullable|numeric|min:0|max:100',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        $jurusanId = $request->jurusan_id;
+        
+        $hasil = HasilUjian::firstOrNew([
+            'siswa_id' => $siswa->id,
+            'jurusan_id' => $jurusanId
+        ]);
+
+        if ($request->has('score_ujian')) {
+            $hasil->score_ujian = $request->score_ujian;
+        }
+        
+        if ($request->has('nilai_wawancara')) {
+            $hasil->nilai_wawancara = $request->nilai_wawancara;
+        }
+        
+        if ($request->has('keterangan')) {
+            $hasil->keterangan = $request->keterangan;
+        }
+
+        // Hitung ulang nilai akhir jika ada nilai
+        if ($hasil->score_ujian !== null || $hasil->nilai_wawancara !== null) {
+            $o = $hasil->score_ujian ?? 0;
+            $w = $hasil->nilai_wawancara ?? 0;
+            $hasil->score_akhir = ($o * 0.3) + ($w * 0.7);
+        }
+
+        $hasil->save();
+
+        return response()->json([
+            'message' => 'Nilai dan keterangan berhasil diperbarui!',
+            'hasil' => $hasil
         ]);
     }
 

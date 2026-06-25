@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class HasilUjian extends Model
 {
     protected $table = 'hasil_ujian';
-    protected $fillable = ['siswa_id', 'jurusan_id', 'jumlah_jawab', 'benar', 'salah', 'score_ujian', 'nilai_wawancara', 'score_akhir', 'total_soal', 'waktu_mulai', 'waktu_selesai'];
+    protected $fillable = ['siswa_id', 'jurusan_id', 'jumlah_jawab', 'benar', 'salah', 'score_ujian', 'nilai_wawancara', 'score_akhir', 'keterangan', 'total_soal', 'waktu_mulai', 'waktu_selesai'];
 
     protected $casts = [
         'waktu_mulai' => 'datetime',

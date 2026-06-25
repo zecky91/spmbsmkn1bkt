@@ -66,6 +66,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/poll', [AdminDashboardController::class, 'poll'])->name('dashboard.poll');
         Route::get('/wawancara', [AdminDashboardController::class, 'wawancaraPage'])->name('wawancara.index');
+        Route::get('/rangking', [AdminDashboardController::class, 'rangkingPage'])->name('rangking.index');
+        Route::post('/rangking/update/{siswa}', [AdminDashboardController::class, 'updateNilaiRangking'])->name('rangking.update');
         Route::post('/reset/{siswa}', [AdminDashboardController::class, 'reset'])->name('siswa.reset');
         Route::post('/gugur/{siswa}', [AdminDashboardController::class, 'gugur'])->name('siswa.gugur');
         Route::post('/wawancara/{siswa}', [AdminDashboardController::class, 'saveWawancara'])->name('siswa.wawancara');
@@ -85,9 +87,3 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-// === Temporary Setup Route for cPanel Deployment ===
-Route::get('/setup-db-spmb', function () {
-    \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]);
-    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-    return 'Database berhasil di-setup dan di-seed dengan sukses! Anda bisa menghapus route ini nanti untuk keamanan.';
-});

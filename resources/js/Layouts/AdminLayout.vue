@@ -125,6 +125,7 @@ const menuItems = computed(() => {
   
   if (canWawancara.value) {
     items.push({ label: 'Input Wawancara', route: 'admin.wawancara.index', componentPrefix: 'Admin/Wawancara', icon: IconUsers });
+    items.push({ label: 'Rangking PPDB', route: 'admin.rangking.index', componentPrefix: 'Admin/Rangking', icon: IconLayers });
   }
   
   return items;
