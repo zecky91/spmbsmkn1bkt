@@ -62,6 +62,13 @@ class DashboardController extends Controller
 
     public function saveWawancara(Request $request, Siswa $siswa)
     {
+        // Hanya admin tertentu yang boleh input nilai wawancara
+        $allowedUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
+        $admin = \App\Models\Admin::find($request->session()->get('admin_id'));
+        if (!$admin || !in_array($admin->username, $allowedUsers)) {
+            return back()->with('error', 'Anda tidak memiliki akses untuk input nilai wawancara.');
+        }
+
         $request->validate([
             'wawancara' => 'required|array',
             'wawancara.*' => 'nullable|numeric|min:0|max:100',

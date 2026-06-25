@@ -60,7 +60,7 @@
               </td>
               <td class="text-right">
                 <div class="flex gap-1.5 justify-end">
-                  <button @click="openWawancara(s)" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600">Wawancara</button>
+                  <button v-if="canWawancara" @click="openWawancara(s)" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600">Wawancara</button>
                   <button v-if="s.status === 'macet'" @click="confirmAction(s, 'reset')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-primary text-white">Reset</button>
                   <button v-if="s.status !== 'selesai' && s.status !== 'belum_login'" @click="confirmAction(s, 'gugur')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-danger text-white">Gugurkan</button>
                 </div>
@@ -112,7 +112,7 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, onUnmounted } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import AdminLayout from '../../Layouts/AdminLayout.vue';
 import StatCard from '../../Components/StatCard.vue';
 import Badge from '../../Components/Badge.vue';
@@ -126,6 +126,12 @@ const filterRoom = ref('');
 const filterStatus = ref('');
 const liveSiswa = ref([...props.siswa]);
 const liveStats = reactive({ ...props.stats });
+
+const allowedWawancaraUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
+const canWawancara = computed(() => {
+  const admin = usePage().props.auth?.admin;
+  return admin && allowedWawancaraUsers.includes(admin.username);
+});
 
 const showConfirmModal = ref(false);
 const actionTarget = ref(null);
