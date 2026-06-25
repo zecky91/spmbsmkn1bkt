@@ -120,7 +120,7 @@ watch(search, () => {
 
 function openCreate() { form.reset(); form.clearErrors(); isEditing.value = false; editId.value = null; showFormModal.value = true; }
 function openEdit(s) {
-  form.nama = s.nama; form.nisn = s.nisn; form.nik = s.nik; form.tanggal_lahir = s.tanggal_lahir; form.asal_sekolah = s.asal_sekolah;
+  form.nama = s.nama; form.nisn = s.nisn; form.nik = s.nik; form.tanggal_lahir = s.tanggal_lahir ? String(s.tanggal_lahir).substring(0, 10) : ''; form.asal_sekolah = s.asal_sekolah;
   form.ruangan_id = s.ruangan_id || ''; form.jurusan1_id = s.jurusan1_id || ''; form.jurusan2_id = s.jurusan2_id || '';
   form.afirmasi = s.afirmasi == 1; form.prestasi = s.prestasi == 1; form.status = s.status || 'belum_login';
   isEditing.value = true; editId.value = s.id; form.clearErrors(); showFormModal.value = true;
@@ -129,7 +129,7 @@ function saveForm() {
   if (isEditing.value) {
     form.put(window.route('admin.siswa.update', editId.value), { onSuccess: () => showFormModal.value = false, preserveScroll: true });
   } else {
-    form.post(window.route('admin.siswa.store'), { onSuccess: () => showFormModal.value = false, preserveScroll: true });
+    form.post(window.route('admin.siswa.store'), { onSuccess: () => form.reset(), preserveScroll: true });
   }
 }
 function confirmDelete(s) { deleteTarget.value = s; showDeleteModal.value = true; }
