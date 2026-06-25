@@ -111,13 +111,17 @@
       <div class="space-y-4">
         <div v-for="jur in getJurusanList(wawancaraSiswa)" :key="jur.id">
           <label class="block text-sm font-semibold mb-1">{{ jur.nama }} ({{ jur.kode }})</label>
-          <input type="number" min="0" max="100" v-model="wawancaraForm.wawancara[jur.id]" class="field w-full text-sm" placeholder="0 - 100">
+          <input type="number" min="0" max="100" v-model="wawancaraValues[jur.id]" class="field w-full text-sm" placeholder="0 - 100">
         </div>
         <p v-if="getJurusanList(wawancaraSiswa).length === 0" class="text-sm text-gray-500">Belum ada jurusan yang dipilih.</p>
+        <p v-if="saveError" class="text-sm text-red-500 mt-2">{{ saveError }}</p>
       </div>
       <template #footer>
-        <button @click="showWawancaraModal = false" class="text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 rounded-lg font-bold transition-colors">Batal</button>
-        <button @click="saveWawancara" class="text-sm bg-[#1E3A5F] text-white hover:bg-[#152B47] px-4 py-2 rounded-lg font-bold transition-colors" :disabled="wawancaraForm.processing">Simpan</button>
+        <button @click="showWawancaraModal = false" :disabled="isSaving" class="text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 rounded-lg font-bold transition-colors disabled:opacity-50">Batal</button>
+        <button @click="saveWawancara" class="text-sm bg-[#1E3A5F] text-white hover:bg-[#152B47] px-4 py-2 rounded-lg font-bold transition-colors disabled:opacity-50 flex items-center gap-2" :disabled="isSaving">
+          <svg v-if="isSaving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+          {{ isSaving ? 'Menyimpan...' : 'Simpan' }}
+        </button>
       </template>
     </Modal>
 
@@ -126,11 +130,13 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../Layouts/AdminLayout.vue';
 import Modal from '../../Components/Modal.vue';
 
 const props = defineProps({ siswa: Array, jurusan: Array });
+
+// Salinan data siswa yang bisa diupdate secara lokal tanpa reload
+const localSiswa = ref(props.siswa.map(s => ({ ...s, hasil_ujian: s.hasil_ujian ? [...s.hasil_ujian.map(h => ({...h}))] : [] })));
 
 const search = ref('');
 const filterJurusan = ref('');
@@ -153,7 +159,7 @@ function getNilaiForJurusan(s) {
 // Daftar siswa di jurusan ini (sebelum filter status)
 const siswaByJurusan = computed(() => {
   if (!filterJurusan.value) return [];
-  let list = props.siswa;
+  let list = localSiswa.value;
   if (search.value) {
     const q = search.value.toLowerCase();
     list = list.filter(s => s.nama.toLowerCase().includes(q) || s.nisn.includes(q));
@@ -194,7 +200,9 @@ watch(filterJurusan, () => {
 
 const showWawancaraModal = ref(false);
 const wawancaraSiswa = ref(null);
-const wawancaraForm = useForm({ wawancara: {} });
+const wawancaraValues = ref({});
+const isSaving = ref(false);
+const saveError = ref('');
 
 function getJurusanList(s) {
   if (!s) return [];
@@ -209,20 +217,62 @@ function getJurusanList(s) {
 
 function openWawancara(s) {
   wawancaraSiswa.value = s;
-  const initWawancara = {};
+  saveError.value = '';
+  const initValues = {};
   if (s.hasil_ujian) {
     s.hasil_ujian.forEach(h => {
-      initWawancara[h.jurusan_id] = h.nilai_wawancara !== null ? h.nilai_wawancara : '';
+      initValues[h.jurusan_id] = h.nilai_wawancara !== null ? h.nilai_wawancara : '';
     });
   }
-  wawancaraForm.wawancara = initWawancara;
+  wawancaraValues.value = initValues;
   showWawancaraModal.value = true;
 }
 
-function saveWawancara() {
-  wawancaraForm.post(window.route('admin.siswa.wawancara', wawancaraSiswa.value.id), {
-    preserveScroll: true,
-    onSuccess: () => { showWawancaraModal.value = false; }
-  });
+async function saveWawancara() {
+  isSaving.value = true;
+  saveError.value = '';
+  try {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const res = await fetch(window.route('admin.siswa.wawancara', wawancaraSiswa.value.id), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ wawancara: wawancaraValues.value }),
+    });
+
+    if (!res.ok) throw new Error('Gagal menyimpan.');
+
+    // Update data lokal tanpa reload halaman
+    const siswaId = wawancaraSiswa.value.id;
+    const idx = localSiswa.value.findIndex(s => s.id === siswaId);
+    if (idx !== -1) {
+      for (const [jurusanId, nilai] of Object.entries(wawancaraValues.value)) {
+        if (nilai === '' || nilai === null) continue;
+        const hasilIdx = localSiswa.value[idx].hasil_ujian.findIndex(h => h.jurusan_id == jurusanId);
+        const scoreUjian = hasilIdx >= 0 ? (localSiswa.value[idx].hasil_ujian[hasilIdx].score_ujian ?? 0) : 0;
+        const scoreAkhir = (scoreUjian * 0.3) + (Number(nilai) * 0.7);
+        if (hasilIdx >= 0) {
+          localSiswa.value[idx].hasil_ujian[hasilIdx].nilai_wawancara = Number(nilai);
+          localSiswa.value[idx].hasil_ujian[hasilIdx].score_akhir = scoreAkhir;
+        } else {
+          localSiswa.value[idx].hasil_ujian.push({
+            jurusan_id: Number(jurusanId),
+            nilai_wawancara: Number(nilai),
+            score_ujian: 0,
+            score_akhir: scoreAkhir,
+          });
+        }
+      }
+    }
+
+    showWawancaraModal.value = false;
+  } catch (e) {
+    saveError.value = 'Terjadi kesalahan. Silakan coba lagi.';
+  } finally {
+    isSaving.value = false;
+  }
 }
 </script>

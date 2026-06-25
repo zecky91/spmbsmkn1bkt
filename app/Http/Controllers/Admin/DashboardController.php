@@ -82,33 +82,37 @@ class DashboardController extends Controller
     {
         // Hanya admin tertentu yang boleh input nilai wawancara
         $allowedUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
-        $admin = \App\Models\Admin::find($request->session()->get('admin_id'));
+        $adminId = $request->session()->get('admin_id');
+        $admin = \App\Models\Admin::select('id', 'username')->find($adminId);
+
         if (!$admin || !in_array($admin->username, $allowedUsers)) {
-            return back()->with('error', 'Anda tidak memiliki akses untuk input nilai wawancara.');
+            return response()->json(['message' => 'Tidak memiliki akses.'], 403);
         }
 
         $request->validate([
-            'wawancara' => 'required|array',
+            'wawancara'   => 'required|array',
             'wawancara.*' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        foreach ($request->wawancara as $jurusanId => $nilai) {
-            if ($nilai !== null) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $siswa) {
+            foreach ($request->wawancara as $jurusanId => $nilai) {
+                if ($nilai === null || $nilai === '') continue;
+
                 $hasil = HasilUjian::firstOrCreate(
                     ['siswa_id' => $siswa->id, 'jurusan_id' => $jurusanId]
                 );
-                
-                $scoreUjian = $hasil->score_ujian ?? 0;
-                $scoreAkhir = ($scoreUjian * 0.3) + ($nilai * 0.7);
+
+                $scoreAkhir = (($hasil->score_ujian ?? 0) * 0.3) + ($nilai * 0.7);
 
                 $hasil->update([
                     'nilai_wawancara' => $nilai,
-                    'score_akhir' => $scoreAkhir
+                    'score_akhir'     => $scoreAkhir,
                 ]);
             }
-        }
+        });
 
-        return back()->with('success', "Nilai wawancara {$siswa->nama} berhasil disimpan.");
+        // Return JSON ringan, tidak reload seluruh halaman
+        return response()->json(['message' => "Nilai wawancara {$siswa->nama} berhasil disimpan."]);
     }
 
     public function export()
