@@ -45,6 +45,7 @@
               <th class="py-3 px-2 font-bold text-gray-500">No</th>
               <th class="py-3 px-2 font-bold text-gray-500">Nama</th>
               <th class="py-3 px-2 font-bold text-gray-500">NISN</th>
+              <th class="py-3 px-2 font-bold text-gray-500">Asal Sekolah</th>
               <th class="py-3 px-2 font-bold text-gray-500">Jurusan 1</th>
               <th class="py-3 px-2 font-bold text-gray-500">Jurusan 2</th>
               <th class="py-3 px-2 font-bold text-gray-500">Nilai Wawancara</th>
@@ -56,6 +57,7 @@
               <td class="py-3 px-2">{{ (currentPage - 1) * perPage + i + 1 }}</td>
               <td class="py-3 px-2 font-semibold">{{ s.nama }}</td>
               <td class="py-3 px-2 font-mono text-sm">{{ s.nisn }}</td>
+              <td class="py-3 px-2 text-sm">{{ s.asal_sekolah || '-' }}</td>
               <td class="py-3 px-2">{{ s.jurusan1?.kode || '-' }}</td>
               <td class="py-3 px-2">{{ s.jurusan2?.kode || '-' }}</td>
               <td class="py-3 px-2">
@@ -79,7 +81,7 @@
           </tbody>
           <tbody v-else>
             <tr>
-              <td colspan="7" class="text-center py-12">
+              <td colspan="8" class="text-center py-12">
                 <div class="flex flex-col items-center justify-center text-gray-500">
                   <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                   <p class="text-base font-semibold" v-if="!filterJurusan">Silakan pilih Jurusan terlebih dahulu</p>
