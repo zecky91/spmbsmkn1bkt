@@ -65,6 +65,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/poll', [AdminDashboardController::class, 'poll'])->name('dashboard.poll');
+        Route::get('/wawancara', [AdminDashboardController::class, 'wawancaraPage'])->name('wawancara.index');
         Route::post('/reset/{siswa}', [AdminDashboardController::class, 'reset'])->name('siswa.reset');
         Route::post('/gugur/{siswa}', [AdminDashboardController::class, 'gugur'])->name('siswa.gugur');
         Route::post('/wawancara/{siswa}', [AdminDashboardController::class, 'saveWawancara'])->name('siswa.wawancara');

@@ -42,6 +42,24 @@ class DashboardController extends Controller
         return response()->json($this->getGlobalData());
     }
 
+    public function wawancaraPage(Request $request)
+    {
+        $allowedUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
+        $admin = \App\Models\Admin::find($request->session()->get('admin_id'));
+        
+        if (!$admin || !in_array($admin->username, $allowedUsers)) {
+            return redirect()->route('admin.dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        $siswa = Siswa::with(['ruangan', 'jurusan1', 'jurusan2', 'hasilUjian'])->get();
+        $jurusan = \App\Models\Jurusan::all();
+
+        return Inertia::render('Admin/Wawancara', [
+            'siswa' => $siswa,
+            'jurusan' => $jurusan
+        ]);
+    }
+
     public function reset(Request $request, Siswa $siswa)
     {
         // Reset status to belum_login so they can log back in, but keep answers

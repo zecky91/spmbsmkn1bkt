@@ -60,7 +60,6 @@
               </td>
               <td class="text-right">
                 <div class="flex gap-1.5 justify-end">
-                  <button v-if="canWawancara" @click="openWawancara(s)" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600">Wawancara</button>
                   <button v-if="s.status === 'macet'" @click="confirmAction(s, 'reset')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-primary text-white">Reset</button>
                   <button v-if="s.status !== 'selesai' && s.status !== 'belum_login'" @click="confirmAction(s, 'gugur')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-danger text-white">Gugurkan</button>
                 </div>
@@ -89,23 +88,7 @@
 
     <ConfirmModal :show="showConfirmModal" :title="confirmTitle" :message="confirmMessage" :confirm-text="confirmBtnText" :variant="confirmVariant" @close="showConfirmModal = false" @confirm="executeAction" />
 
-    <!-- Wawancara Modal -->
-    <Modal :show="showWawancaraModal" max-width="500px" @close="showWawancaraModal = false">
-      <template #header>
-        <h3 class="text-lg font-bold">Input Wawancara - {{ wawancaraSiswa?.nama }}</h3>
-      </template>
-      <div class="space-y-4">
-        <div v-for="jurusan in getJurusanList(wawancaraSiswa)" :key="jurusan.id">
-          <label class="block text-sm font-semibold mb-1">{{ jurusan.nama }} ({{ jurusan.kode }})</label>
-          <input type="number" min="0" max="100" v-model="wawancaraForm.wawancara[jurusan.id]" class="field w-full text-sm" placeholder="0 - 100">
-        </div>
-        <p v-if="getJurusanList(wawancaraSiswa).length === 0" class="text-sm text-gray-500">Belum ada jurusan yang dipilih.</p>
-      </div>
-      <template #footer>
-        <button @click="showWawancaraModal = false" class="btn text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 rounded-lg">Batal</button>
-        <button @click="saveWawancara" class="btn text-sm bg-primary text-white hover:bg-primary-dark px-4 py-2 rounded-lg" :disabled="wawancaraForm.processing">Simpan</button>
-      </template>
-    </Modal>
+    <!-- Modal logic wawancara removed, moved to dedicated page -->
 
   </AdminLayout>
 </template>
@@ -127,11 +110,7 @@ const filterStatus = ref('');
 const liveSiswa = ref([...props.siswa]);
 const liveStats = reactive({ ...props.stats });
 
-const allowedWawancaraUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
-const canWawancara = computed(() => {
-  const admin = usePage().props.auth?.admin;
-  return admin && allowedWawancaraUsers.includes(admin.username);
-});
+// Wawancara logic removed from here
 
 const showConfirmModal = ref(false);
 const actionTarget = ref(null);
@@ -174,35 +153,7 @@ function executeAction() {
   router.post(window.route(routeName, actionTarget.value.id));
 }
 
-const showWawancaraModal = ref(false);
-const wawancaraSiswa = ref(null);
-const wawancaraForm = useForm({ wawancara: {} });
-
-function getJurusanList(s) {
-  if (!s) return [];
-  const list = [];
-  if (s.jurusan1) list.push(s.jurusan1);
-  if (s.jurusan2) list.push(s.jurusan2);
-  return list;
-}
-
-function openWawancara(s) {
-  wawancaraSiswa.value = s;
-  const initWawancara = {};
-  if (s.hasil_ujian) {
-    s.hasil_ujian.forEach(h => {
-      initWawancara[h.jurusan_id] = h.nilai_wawancara || '';
-    });
-  }
-  wawancaraForm.wawancara = initWawancara;
-  showWawancaraModal.value = true;
-}
-
-function saveWawancara() {
-  wawancaraForm.post(window.route('admin.siswa.wawancara', wawancaraSiswa.value.id), {
-    onSuccess: () => { showWawancaraModal.value = false; }
-  });
-}
+// Wawancara methods removed from here
 
 let poll;
 onMounted(() => { poll = setInterval(async () => { try { const r = await fetch(window.route('admin.dashboard.poll')); const d = await r.json(); liveSiswa.value = d.siswa; Object.assign(liveStats, d.stats); } catch(e){} }, 5000); });

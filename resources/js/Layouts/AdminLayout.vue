@@ -65,8 +65,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 import Toast from '../Components/Toast.vue';
 
 defineProps({
@@ -107,14 +107,28 @@ const IconShield = () => h('svg', { fill: 'none', stroke: 'currentColor', 'strok
   h('path', { d: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' })
 ]);
 
-const menuItems = [
-  { label: 'Dashboard', route: 'admin.dashboard', componentPrefix: 'Admin/Dashboard', icon: IconGrid },
-  { label: 'Data Siswa', route: 'admin.siswa.index', componentPrefix: 'Admin/Siswa', icon: IconUsers },
-  { label: 'Input Jurusan', route: 'admin.jurusan.index', componentPrefix: 'Admin/Jurusan', icon: IconLayers },
-  { label: 'Bank Soal', route: 'admin.soal.index', componentPrefix: 'Admin/Soal', icon: IconBook },
-  { label: 'Ruangan & PIN', route: 'admin.ruangan.index', componentPrefix: 'Admin/Ruangan', icon: IconDoor },
-  { label: 'Pengawas', route: 'admin.pengawas.index', componentPrefix: 'Admin/Pengawas', icon: IconShield },
-];
+const allowedWawancaraUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
+const canWawancara = computed(() => {
+  const admin = usePage().props.auth?.admin;
+  return admin && allowedWawancaraUsers.includes(admin.username);
+});
+
+const menuItems = computed(() => {
+  const items = [
+    { label: 'Dashboard', route: 'admin.dashboard', componentPrefix: 'Admin/Dashboard', icon: IconGrid },
+    { label: 'Data Siswa', route: 'admin.siswa.index', componentPrefix: 'Admin/Siswa', icon: IconUsers },
+    { label: 'Input Jurusan', route: 'admin.jurusan.index', componentPrefix: 'Admin/Jurusan', icon: IconLayers },
+    { label: 'Bank Soal', route: 'admin.soal.index', componentPrefix: 'Admin/Soal', icon: IconBook },
+    { label: 'Ruangan & PIN', route: 'admin.ruangan.index', componentPrefix: 'Admin/Ruangan', icon: IconDoor },
+    { label: 'Pengawas', route: 'admin.pengawas.index', componentPrefix: 'Admin/Pengawas', icon: IconShield },
+  ];
+  
+  if (canWawancara.value) {
+    items.push({ label: 'Input Wawancara', route: 'admin.wawancara.index', componentPrefix: 'Admin/Wawancara', icon: IconUsers });
+  }
+  
+  return items;
+});
 
 function getInitials(name) {
   if (!name) return 'AD';
