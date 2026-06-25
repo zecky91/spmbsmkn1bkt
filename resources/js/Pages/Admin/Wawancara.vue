@@ -55,7 +55,13 @@
           </tbody>
           <tbody v-else>
             <tr>
-              <td colspan="7" class="text-center py-8 text-gray-400">Tidak ada data.</td>
+              <td colspan="7" class="text-center py-12">
+                <div class="flex flex-col items-center justify-center text-gray-500">
+                  <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                  <p class="text-base font-semibold" v-if="!filterJurusan">Silakan pilih Jurusan terlebih dahulu</p>
+                  <p class="text-base font-semibold" v-else>Tidak ada siswa di jurusan ini</p>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -74,7 +80,7 @@
     </div>
 
     <!-- Wawancara Modal -->
-    <Modal :show="showWawancaraModal" max-width="500px" @close="showWawancaraModal = false">
+    <Modal :show="showWawancaraModal" max-width="500px" :closeable="false" :show-close-button="true" @close="showWawancaraModal = false">
       <template #header>
         <h3 class="text-lg font-bold">Input Wawancara - {{ wawancaraSiswa?.nama }}</h3>
       </template>
@@ -106,6 +112,8 @@ const search = ref('');
 const filterJurusan = ref('');
 
 const filteredSiswa = computed(() => {
+  if (!filterJurusan.value) return [];
+  
   let list = props.siswa;
   
   if (search.value) {
@@ -113,9 +121,7 @@ const filteredSiswa = computed(() => {
     list = list.filter(s => s.nama.toLowerCase().includes(q) || s.nisn.includes(q));
   }
   
-  if (filterJurusan.value) {
-    list = list.filter(s => s.jurusan1_id == filterJurusan.value || s.jurusan2_id == filterJurusan.value);
-  }
+  list = list.filter(s => s.jurusan1_id == filterJurusan.value || s.jurusan2_id == filterJurusan.value);
   
   return list;
 });
@@ -142,6 +148,11 @@ function getJurusanList(s) {
   const list = [];
   if (s.jurusan1) list.push(s.jurusan1);
   if (s.jurusan2) list.push(s.jurusan2);
+  
+  if (filterJurusan.value) {
+    return list.filter(j => j.id == filterJurusan.value);
+  }
+  
   return list;
 }
 
