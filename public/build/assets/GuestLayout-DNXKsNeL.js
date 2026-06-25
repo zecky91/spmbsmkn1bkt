@@ -1,1 +1,0 @@
-import{_ as t}from"./Toast-CuguNwGk.js";import{i as s,C as r,f as a,h as o}from"./app-DJnYn3U2.js";const c={class:"min-h-screen flex items-center justify-center p-4 auth-bg"},f={__name:"GuestLayout",setup(n){return(e,_)=>(o(),s("div",c,[r(e.$slots,"default"),a(t)]))}};export{f as _};

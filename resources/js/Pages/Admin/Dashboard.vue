@@ -37,7 +37,7 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>No</th><th>Nama</th><th>NISN</th><th>Ruangan</th><th>Jurusan 1</th><th>Jurusan 2</th><th>Status</th><th>Nilai Akhir</th><th class="text-right">Aksi</th>
+              <th>No</th><th>Nama</th><th>NISN</th><th>Ruangan</th><th>Jurusan 1</th><th>Jurusan 2</th><th>Status</th><th>Tes Online</th><th>Tes Wawancara</th><th>Nilai Akhir</th><th class="text-right">Aksi</th>
             </tr>
           </thead>
           <tbody v-if="paginatedSiswa.length > 0">
@@ -49,6 +49,24 @@
               <td>{{ s.jurusan1?.kode || '-' }}</td>
               <td>{{ s.jurusan2?.kode || '-' }}</td>
               <td><Badge :status="s.status" /></td>
+              <td>
+                <div v-if="s.hasil_ujian?.length">
+                  <div v-for="h in s.hasil_ujian" :key="h.id" class="text-xs whitespace-nowrap">
+                    <span class="font-semibold">{{ h.jurusan_id == s.jurusan1_id ? s.jurusan1?.kode : s.jurusan2?.kode }}:</span>
+                    {{ h.score_ujian !== null ? Number(h.score_ujian).toFixed(1) : '-' }}
+                  </div>
+                </div>
+                <div v-else class="text-xs text-gray-400">-</div>
+              </td>
+              <td>
+                <div v-if="s.hasil_ujian?.length">
+                  <div v-for="h in s.hasil_ujian" :key="'w-'+h.id" class="text-xs whitespace-nowrap">
+                    <span class="font-semibold">{{ h.jurusan_id == s.jurusan1_id ? s.jurusan1?.kode : s.jurusan2?.kode }}:</span>
+                    {{ h.nilai_wawancara !== null ? h.nilai_wawancara : '-' }}
+                  </div>
+                </div>
+                <div v-else class="text-xs text-gray-400">-</div>
+              </td>
               <td>
                 <div v-if="s.hasil_ujian?.length">
                   <div v-for="h in s.hasil_ujian" :key="h.id" class="text-xs whitespace-nowrap">
@@ -68,7 +86,7 @@
           </tbody>
           <tbody v-else>
             <tr>
-              <td colspan="9" class="text-center py-8 text-gray-400">Tidak ada data.</td>
+              <td colspan="11" class="text-center py-8 text-gray-400">Tidak ada data.</td>
             </tr>
           </tbody>
         </table>

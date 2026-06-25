@@ -9,6 +9,27 @@
           <option value="">Semua Jurusan</option>
           <option v-for="j in jurusan" :key="j.id" :value="j.id">{{ j.nama }} ({{ j.kode }})</option>
         </select>
+
+        <!-- Filter Status Wawancara -->
+        <div v-if="filterJurusan" class="flex rounded-xl overflow-hidden border border-gray-200 text-sm font-semibold">
+          <button
+            @click="filterStatus = 'belum'"
+            :class="filterStatus === 'belum' ? 'bg-orange-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'"
+            class="px-4 py-2 transition-colors flex items-center gap-1.5"
+          >
+            <span class="w-2 h-2 rounded-full bg-current"></span>
+            Belum ({{ belumCount }})
+          </button>
+          <button
+            @click="filterStatus = 'sudah'"
+            :class="filterStatus === 'sudah' ? 'bg-green-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'"
+            class="px-4 py-2 border-l border-gray-200 transition-colors flex items-center gap-1.5"
+          >
+            <span class="w-2 h-2 rounded-full bg-current"></span>
+            Sudah ({{ sudahCount }})
+          </button>
+        </div>
+
         <div class="text-sm text-gray-500 ml-auto">
           Total: <span class="font-bold text-[#1E3A5F]">{{ filteredSiswa.length }}</span> peserta
         </div>
@@ -38,17 +59,20 @@
               <td class="py-3 px-2">{{ s.jurusan1?.kode || '-' }}</td>
               <td class="py-3 px-2">{{ s.jurusan2?.kode || '-' }}</td>
               <td class="py-3 px-2">
-                <div v-if="s.hasil_ujian?.length">
-                  <div v-for="h in s.hasil_ujian" :key="h.id" class="text-xs whitespace-nowrap">
-                    <span class="font-semibold">{{ h.jurusan_id == s.jurusan1_id ? s.jurusan1?.kode : s.jurusan2?.kode }}:</span>
-                    {{ h.nilai_wawancara !== null ? h.nilai_wawancara : '-' }}
-                  </div>
+                <div v-if="getNilaiForJurusan(s) !== null">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    {{ getNilaiForJurusan(s) }}
+                  </span>
                 </div>
-                <div v-else class="text-xs text-gray-400">-</div>
+                <span v-else class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                  Belum diisi
+                </span>
               </td>
               <td class="py-3 px-2 text-right">
                 <button @click="openWawancara(s)" class="text-xs px-2.5 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 font-semibold transition-colors">
-                  Input Nilai
+                  {{ getNilaiForJurusan(s) !== null ? 'Edit Nilai' : 'Input Nilai' }}
                 </button>
               </td>
             </tr>
@@ -59,7 +83,7 @@
                 <div class="flex flex-col items-center justify-center text-gray-500">
                   <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                   <p class="text-base font-semibold" v-if="!filterJurusan">Silakan pilih Jurusan terlebih dahulu</p>
-                  <p class="text-base font-semibold" v-else>Tidak ada siswa di jurusan ini</p>
+                  <p class="text-base font-semibold" v-else>Tidak ada siswa ditemukan</p>
                 </div>
               </td>
             </tr>
@@ -110,20 +134,44 @@ const props = defineProps({ siswa: Array, jurusan: Array });
 
 const search = ref('');
 const filterJurusan = ref('');
+const filterStatus = ref('belum'); // default: tampilkan yang belum
 
-const filteredSiswa = computed(() => {
+// Cek apakah siswa sudah memiliki nilai wawancara untuk jurusan yang sedang di-filter
+function hasNilaiWawancara(s) {
+  if (!filterJurusan.value || !s.hasil_ujian?.length) return false;
+  const h = s.hasil_ujian.find(h => h.jurusan_id == filterJurusan.value);
+  return h && h.nilai_wawancara !== null;
+}
+
+// Ambil nilai wawancara untuk jurusan yang sedang di-filter
+function getNilaiForJurusan(s) {
+  if (!filterJurusan.value || !s.hasil_ujian?.length) return null;
+  const h = s.hasil_ujian.find(h => h.jurusan_id == filterJurusan.value);
+  return (h && h.nilai_wawancara !== null) ? h.nilai_wawancara : null;
+}
+
+// Daftar siswa di jurusan ini (sebelum filter status)
+const siswaByJurusan = computed(() => {
   if (!filterJurusan.value) return [];
-  
   let list = props.siswa;
-  
   if (search.value) {
     const q = search.value.toLowerCase();
     list = list.filter(s => s.nama.toLowerCase().includes(q) || s.nisn.includes(q));
   }
-  
-  list = list.filter(s => s.jurusan1_id == filterJurusan.value || s.jurusan2_id == filterJurusan.value);
-  
-  return list;
+  return list.filter(s => s.jurusan1_id == filterJurusan.value || s.jurusan2_id == filterJurusan.value);
+});
+
+// Hitung jumlah untuk badge counter
+const belumCount = computed(() => siswaByJurusan.value.filter(s => !hasNilaiWawancara(s)).length);
+const sudahCount = computed(() => siswaByJurusan.value.filter(s => hasNilaiWawancara(s)).length);
+
+const filteredSiswa = computed(() => {
+  if (!filterJurusan.value) return [];
+  return siswaByJurusan.value.filter(s => {
+    if (filterStatus.value === 'belum') return !hasNilaiWawancara(s);
+    if (filterStatus.value === 'sudah') return hasNilaiWawancara(s);
+    return true;
+  });
 });
 
 const currentPage = ref(1);
@@ -134,9 +182,14 @@ const paginatedSiswa = computed(() => {
   return filteredSiswa.value.slice(start, start + perPage);
 });
 
-// Reset pagination when filters change
-watch([search, filterJurusan], () => {
+// Reset pagination ketika filter berubah
+watch([search, filterJurusan, filterStatus], () => {
   currentPage.value = 1;
+});
+
+// Reset filterStatus ke 'belum' ketika jurusan berubah
+watch(filterJurusan, () => {
+  filterStatus.value = 'belum';
 });
 
 const showWawancaraModal = ref(false);
@@ -148,11 +201,9 @@ function getJurusanList(s) {
   const list = [];
   if (s.jurusan1) list.push(s.jurusan1);
   if (s.jurusan2) list.push(s.jurusan2);
-  
   if (filterJurusan.value) {
     return list.filter(j => j.id == filterJurusan.value);
   }
-  
   return list;
 }
 
