@@ -68,7 +68,7 @@
               <td class="py-3 px-2 text-right font-mono">{{ s.nilai_online !== null ? Number(s.nilai_online).toFixed(1) : '-' }}</td>
               <td class="py-3 px-2 text-right font-mono">{{ s.nilai_wawancara !== null ? Number(s.nilai_wawancara).toFixed(1) : '-' }}</td>
               <td class="py-3 px-2 text-right font-bold text-lg text-[#1E3A5F]">
-                {{ s.nilai_akhir !== null ? Number(s.nilai_akhir).toFixed(1) : '-' }}
+                {{ s.nilai_akhir !== null ? Math.round(Number(s.nilai_akhir)) : '-' }}
               </td>
               <td class="py-3 px-2 text-sm text-gray-600 truncate max-w-[150px]" :title="s.keterangan">{{ s.keterangan || '-' }}</td>
               <td class="py-3 px-2 text-center">
