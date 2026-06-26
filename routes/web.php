@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\JurusanController as AdminJurusanController;
 use App\Http\Controllers\Admin\SoalController as AdminSoalController;
 use App\Http\Controllers\Admin\RuanganController as AdminRuanganController;
 use App\Http\Controllers\Admin\PengawasController as AdminPengawasController;
+use App\Http\Controllers\Admin\BackupController as AdminBackupController;
 
 // === Peserta (Student) Flow ===
 // 1. Enter Room PIN
@@ -72,6 +73,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/gugur/{siswa}', [AdminDashboardController::class, 'gugur'])->name('siswa.gugur');
         Route::post('/wawancara/{siswa}', [AdminDashboardController::class, 'saveWawancara'])->name('siswa.wawancara');
         Route::get('/export', [AdminDashboardController::class, 'export'])->name('export');
+        
+        // Backup & Restore
+        Route::get('/backup-restore', [AdminBackupController::class, 'index'])->name('backup.index');
+        Route::get('/backup-restore/download', [AdminBackupController::class, 'backup'])->name('backup.download');
+        Route::post('/backup-restore/upload', [AdminBackupController::class, 'restore'])->name('backup.upload');
         
         // CRUD resources
         Route::resource('siswa', AdminSiswaController::class);

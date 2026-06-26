@@ -106,6 +106,11 @@ const IconDoor = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-
 const IconShield = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': 2, viewBox: '0 0 24 24' }, [
   h('path', { d: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' })
 ]);
+const IconDatabase = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': 2, viewBox: '0 0 24 24' }, [
+  h('ellipse', { cx: 12, cy: 5, rx: 9, ry: 3 }),
+  h('path', { d: 'M21 12c0 1.66-4 3-9 3s-9-1.34-9-3' }),
+  h('path', { d: 'M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5' })
+]);
 
 const allowedWawancaraUsers = ['ahmad_zaki', 'yulia_sandra', 'mardayoni12'];
 const canWawancara = computed(() => {
@@ -121,6 +126,7 @@ const menuItems = computed(() => {
     { label: 'Bank Soal', route: 'admin.soal.index', componentPrefix: 'Admin/Soal', icon: IconBook },
     { label: 'Ruangan & PIN', route: 'admin.ruangan.index', componentPrefix: 'Admin/Ruangan', icon: IconDoor },
     { label: 'Pengawas', route: 'admin.pengawas.index', componentPrefix: 'Admin/Pengawas', icon: IconShield },
+    { label: 'Backup & Restore', route: 'admin.backup.index', componentPrefix: 'Admin/Backup', icon: IconDatabase },
   ];
   
   if (canWawancara.value) {
