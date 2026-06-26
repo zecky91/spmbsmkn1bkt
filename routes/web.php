@@ -70,7 +70,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/rangking', [AdminDashboardController::class, 'rangkingPage'])->name('rangking.index');
         Route::post('/rangking/update/{siswa}', [AdminDashboardController::class, 'updateNilaiRangking'])->name('rangking.update');
         Route::post('/reset/{siswa}', [AdminDashboardController::class, 'reset'])->name('siswa.reset');
-        Route::post('/gugur/{siswa}', [AdminDashboardController::class, 'gugur'])->name('siswa.gugur');
+        Route::post('/reset-ujian/{siswa}', [AdminDashboardController::class, 'resetUjian'])->name('siswa.resetUjian');
         Route::post('/wawancara/{siswa}', [AdminDashboardController::class, 'saveWawancara'])->name('siswa.wawancara');
         Route::get('/export', [AdminDashboardController::class, 'export'])->name('export');
         

@@ -138,15 +138,15 @@ class DashboardController extends Controller
         return back()->with('success', "Status ujian {$siswa->nama} berhasil direset.");
     }
 
-    public function gugur(Request $request, Siswa $siswa)
+    public function resetUjian(Request $request, Siswa $siswa)
     {
-        // Disqualify: reset status and wipe all answers/results
+        // Disqualify/Reset: reset status and wipe all answers/results
         $siswa->update(['status' => 'belum_login']);
         
         JawabanUjian::where('siswa_id', $siswa->id)->delete();
         HasilUjian::where('siswa_id', $siswa->id)->delete();
 
-        return back()->with('success', "Peserta {$siswa->nama} berhasil digugurkan (jawaban dihapus).");
+        return back()->with('success', "Hasil ujian {$siswa->nama} berhasil direset (jawaban dihapus).");
     }
 
     public function saveWawancara(Request $request, Siswa $siswa)

@@ -78,8 +78,8 @@
               </td>
               <td class="text-right">
                 <div class="flex gap-1.5 justify-end">
-                  <button v-if="s.status === 'macet'" @click="confirmAction(s, 'reset')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-primary text-white">Reset</button>
-                  <button v-if="s.status !== 'selesai' && s.status !== 'belum_login'" @click="confirmAction(s, 'gugur')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-danger text-white">Gugurkan</button>
+                  <button v-if="s.status === 'macet'" @click="confirmAction(s, 'reset')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-primary text-white">Reset Status</button>
+                  <button v-if="s.status !== 'belum_login'" @click="confirmAction(s, 'resetUjian')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-danger text-white">Reset Hasil Ujian</button>
                 </div>
               </td>
             </tr>
@@ -134,9 +134,9 @@ const showConfirmModal = ref(false);
 const actionTarget = ref(null);
 const actionType = ref('');
 
-const confirmTitle = computed(() => actionType.value === 'reset' ? `Reset ${actionTarget.value?.nama}` : `Gugurkan ${actionTarget.value?.nama}`);
-const confirmMessage = computed(() => actionType.value === 'reset' ? 'Status akan direset ke Login. Jawaban tetap tersimpan.' : 'Peserta akan digugurkan dan semua jawaban dihapus. Tindakan ini tidak dapat dibatalkan.');
-const confirmBtnText = computed(() => actionType.value === 'reset' ? 'Ya, Reset' : 'Ya, Gugurkan');
+const confirmTitle = computed(() => actionType.value === 'reset' ? `Reset Status ${actionTarget.value?.nama}` : `Reset Hasil Ujian ${actionTarget.value?.nama}`);
+const confirmMessage = computed(() => actionType.value === 'reset' ? 'Status akan direset ke Login. Jawaban tetap tersimpan.' : 'Anda yakin mereset hasil ujian? Hasil ujian dan jawaban ujian siswa ini akan dihapus secara permanen dari database.');
+const confirmBtnText = computed(() => actionType.value === 'reset' ? 'Ya, Reset Status' : 'Ya, Reset Hasil Ujian');
 const confirmVariant = computed(() => actionType.value === 'reset' ? 'warning' : 'danger');
 
 const filteredSiswa = computed(() => {
@@ -167,7 +167,7 @@ watch([search, filterRoom, filterStatus], () => {
 function confirmAction(s, type) { actionTarget.value = s; actionType.value = type; showConfirmModal.value = true; }
 function executeAction() {
   showConfirmModal.value = false;
-  const routeName = actionType.value === 'reset' ? 'admin.siswa.reset' : 'admin.siswa.gugur';
+  const routeName = actionType.value === 'reset' ? 'admin.siswa.reset' : 'admin.siswa.resetUjian';
   router.post(window.route(routeName, actionTarget.value.id));
 }
 
