@@ -140,6 +140,13 @@ class DashboardController extends Controller
 
     public function resetUjian(Request $request, Siswa $siswa)
     {
+        $adminId = $request->session()->get('admin_id');
+        $admin = \App\Models\Admin::find($adminId);
+        
+        if (!$admin || $admin->username !== 'ahmad_zaki') {
+            return back()->with('error', 'Anda tidak memiliki izin untuk melakukan Reset Hasil Ujian.');
+        }
+
         // Disqualify/Reset: reset status and wipe all answers/results
         $siswa->update(['status' => 'belum_login']);
         

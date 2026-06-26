@@ -79,7 +79,7 @@
               <td class="text-right">
                 <div class="flex gap-1.5 justify-end">
                   <button v-if="s.status === 'macet'" @click="confirmAction(s, 'reset')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-primary text-white">Reset Status</button>
-                  <button v-if="s.status !== 'belum_login'" @click="confirmAction(s, 'resetUjian')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-danger text-white">Reset Hasil Ujian</button>
+                  <button v-if="s.status !== 'belum_login' && canResetUjian" @click="confirmAction(s, 'resetUjian')" class="btn text-xs px-2.5 py-1.5 rounded-lg bg-danger text-white">Reset Hasil Ujian</button>
                 </div>
               </td>
             </tr>
@@ -121,6 +121,8 @@ import ConfirmModal from '../../Components/ConfirmModal.vue';
 import Modal from '../../Components/Modal.vue';
 
 const props = defineProps({ siswa: Array, ruangan: Array, stats: Object });
+const page = usePage();
+const canResetUjian = computed(() => page.props.auth.admin?.username === 'ahmad_zaki');
 
 const search = ref('');
 const filterRoom = ref('');
