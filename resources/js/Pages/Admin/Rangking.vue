@@ -28,6 +28,8 @@
               <th class="py-3 px-2 font-bold text-gray-500">NISN</th>
               <th class="py-3 px-2 font-bold text-gray-500">Asal Sekolah</th>
               <th class="py-3 px-2 font-bold text-gray-500 text-center">Pilihan Ke-</th>
+              <th class="py-3 px-2 font-bold text-gray-500 text-center">Afirmasi</th>
+              <th class="py-3 px-2 font-bold text-gray-500 text-center">Prestasi</th>
               <th class="py-3 px-2 font-bold text-gray-500 text-right">Nilai Online</th>
               <th class="py-3 px-2 font-bold text-gray-500 text-right">Nilai Wawancara</th>
               <th class="py-3 px-2 font-bold text-gray-500 text-right">Nilai Akhir</th>
@@ -55,6 +57,14 @@
                   Pilihan {{ s.pilihan }}
                 </span>
               </td>
+              <td class="py-3 px-2 text-sm font-semibold text-center">
+                <span v-if="s.afirmasi == '1' || s.afirmasi === true || s.afirmasi === 'Ya' || s.afirmasi === 'ya'" class="text-green-600 bg-green-50 px-2 py-1 rounded-md">Ya</span>
+                <span v-else class="text-gray-400">-</span>
+              </td>
+              <td class="py-3 px-2 text-sm font-semibold text-center">
+                <span v-if="s.prestasi == '1' || s.prestasi === true || s.prestasi === 'Ya' || s.prestasi === 'ya'" class="text-blue-600 bg-blue-50 px-2 py-1 rounded-md">Ya</span>
+                <span v-else class="text-gray-400">-</span>
+              </td>
               <td class="py-3 px-2 text-right font-mono">{{ s.nilai_online !== null ? Number(s.nilai_online).toFixed(1) : '-' }}</td>
               <td class="py-3 px-2 text-right font-mono">{{ s.nilai_wawancara !== null ? Number(s.nilai_wawancara).toFixed(1) : '-' }}</td>
               <td class="py-3 px-2 text-right font-bold text-lg text-[#1E3A5F]">
@@ -71,7 +81,7 @@
           </tbody>
           <tbody v-else>
             <tr>
-              <td colspan="10" class="text-center py-12">
+              <td colspan="12" class="text-center py-12">
                 <div class="flex flex-col items-center justify-center text-gray-500">
                   <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                   <p class="text-base font-semibold" v-if="!filterJurusan">Silakan pilih Jurusan terlebih dahulu untuk melihat rangking.</p>
