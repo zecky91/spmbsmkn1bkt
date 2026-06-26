@@ -4,7 +4,7 @@
     <!-- Filter Bar -->
     <div class="bg-white rounded-2xl elev-1 p-5 mb-4 fade-in">
       <div class="flex flex-wrap gap-3 items-center">
-        <input v-model="search" placeholder="Cari nama/NISN..." class="field max-w-xs text-sm flex-1" />
+        <input ref="searchInput" v-model="search" placeholder="Cari nama/NISN..." class="field max-w-xs text-sm flex-1" />
         <select v-model="filterJurusan" class="field max-w-[200px] text-sm">
           <option value="">Semua Jurusan</option>
           <option v-for="j in jurusan" :key="j.id" :value="j.id">{{ j.nama }} ({{ j.kode }})</option>
@@ -141,6 +141,7 @@ const props = defineProps({ siswa: Array, jurusan: Array });
 const localSiswa = ref(props.siswa.map(s => ({ ...s, hasil_ujian: s.hasil_ujian ? [...s.hasil_ujian.map(h => ({...h}))] : [] })));
 
 const search = ref('');
+const searchInput = ref(null);
 const filterJurusan = ref('');
 const filterStatus = ref('belum'); // default: tampilkan yang belum
 
@@ -276,6 +277,12 @@ async function saveWawancara() {
     }
 
     showWawancaraModal.value = false;
+    setTimeout(() => {
+      if (searchInput.value) {
+        searchInput.value.focus();
+        searchInput.value.select();
+      }
+    }, 100);
   } catch (e) {
     saveError.value = 'Terjadi kesalahan. Silakan coba lagi.';
   } finally {

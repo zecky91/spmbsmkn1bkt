@@ -9,14 +9,14 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white rounded-2xl elev-1 p-5 mb-4 fade-in">
-      <div class="flex flex-wrap gap-3 items-center">
-        <input v-model="search" placeholder="Cari nama/NISN..." class="field max-w-xs text-sm flex-1" />
-        <select v-model="filterRoom" class="field max-w-[200px] text-sm">
+    <div class="bg-white rounded-2xl elev-1 p-4 sm:p-5 mb-4 fade-in">
+      <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
+        <input v-model="search" placeholder="Cari nama/NISN..." class="field text-sm flex-1 w-full sm:w-auto sm:max-w-xs" />
+        <select v-model="filterRoom" class="field text-sm w-full sm:w-auto sm:max-w-[200px]">
           <option value="">Semua Ruangan</option>
           <option v-for="r in ruangan" :key="r.id" :value="r.id">{{ r.nama }}</option>
         </select>
-        <select v-model="filterStatus" class="field max-w-[180px] text-sm">
+        <select v-model="filterStatus" class="field text-sm w-full sm:w-auto sm:max-w-[180px]">
           <option value="">Semua Status</option>
           <option value="belum_login">Belum Login</option>
           <option value="login">Login</option>
@@ -24,10 +24,10 @@
           <option value="selesai">Selesai</option>
           <option value="macet">Macet</option>
         </select>
-        <a :href="route('admin.export')" class="btn inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-success text-white text-sm font-semibold hover:opacity-90 ml-auto">
+        <a :href="route('admin.export')" class="btn w-full sm:w-auto sm:ml-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-success text-white text-sm font-semibold hover:opacity-90">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             Export CSV
-          </a>
+        </a>
       </div>
     </div>
 
