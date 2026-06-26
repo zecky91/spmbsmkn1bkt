@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Ifsnop\Mysqldump as IMysqldump;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
@@ -16,32 +15,65 @@ class BackupController extends Controller
         return Inertia::render('Admin/BackupRestore');
     }
 
+    /**
+     * Tabel-tabel yang dikecualikan dari backup (data sesi/cache sementara)
+     */
+    private $excludedTables = ['sessions', 'cache', 'cache_locks', 'jobs', 'job_batches', 'failed_jobs', 'migrations'];
+
     public function backup(Request $request)
     {
         try {
-            $database = env('DB_DATABASE');
-            $username = env('DB_USERNAME');
-            $password = env('DB_PASSWORD');
-            $host = env('DB_HOST', '127.0.0.1');
-            $port = env('DB_PORT', '3306');
+            $database = config('database.connections.mysql.database');
+            $tables = DB::select('SHOW TABLES');
+            $key = 'Tables_in_' . $database;
 
-            // Kita kecualikan tabel yang berisi data sesi sementara agar tidak me-logout user
-            $dumpSettings = array(
-                'exclude-tables' => ['sessions', 'cache', 'cache_locks', 'jobs', 'job_batches', 'failed_jobs'],
-                'compress' => IMysqldump\Mysqldump::NONE,
-            );
+            $sql = "-- PPDB Exam Database Backup\n";
+            $sql .= "-- Tanggal: " . date('Y-m-d H:i:s') . "\n";
+            $sql .= "-- Database: {$database}\n\n";
+            $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
-            $dump = new IMysqldump\Mysqldump(
-                "mysql:host={$host};port={$port};dbname={$database}",
-                $username,
-                $password,
-                $dumpSettings
-            );
+            foreach ($tables as $table) {
+                $tableName = $table->$key;
+
+                // Lewati tabel yang dikecualikan
+                if (in_array($tableName, $this->excludedTables)) {
+                    continue;
+                }
+
+                // Ambil CREATE TABLE statement
+                $createTable = DB::select("SHOW CREATE TABLE `{$tableName}`");
+                $sql .= "-- Struktur tabel: {$tableName}\n";
+                $sql .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
+                $sql .= $createTable[0]->{'Create Table'} . ";\n\n";
+
+                // Ambil semua data
+                $rows = DB::select("SELECT * FROM `{$tableName}`");
+
+                if (count($rows) > 0) {
+                    $sql .= "-- Data tabel: {$tableName} (" . count($rows) . " baris)\n";
+
+                    foreach ($rows as $row) {
+                        $values = [];
+                        foreach ((array)$row as $value) {
+                            if ($value === null) {
+                                $values[] = 'NULL';
+                            } else {
+                                $values[] = "'" . addslashes($value) . "'";
+                            }
+                        }
+                        $columns = array_keys((array)$row);
+                        $sql .= "INSERT INTO `{$tableName}` (`" . implode('`, `', $columns) . "`) VALUES (" . implode(', ', $values) . ");\n";
+                    }
+                    $sql .= "\n";
+                }
+            }
+
+            $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
 
             $fileName = 'backup_ppdb_' . date('Y-m-d_H-i-s') . '.sql';
             $tempPath = storage_path('app/' . $fileName);
 
-            $dump->start($tempPath);
+            File::put($tempPath, $sql);
 
             return response()->download($tempPath)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
