@@ -113,7 +113,7 @@
       <div class="space-y-4">
         <div v-for="jur in getJurusanList(wawancaraSiswa)" :key="jur.id">
           <label class="block text-sm font-semibold mb-1">{{ jur.nama }} ({{ jur.kode }})</label>
-          <input type="number" min="0" max="100" v-model="wawancaraValues[jur.id]" class="field w-full text-sm" placeholder="0 - 100">
+          <input type="number" min="0" max="100" v-model="wawancaraValues[jur.id]" @keyup.enter="saveWawancara" class="field w-full text-sm wawancara-input" placeholder="0 - 100">
         </div>
         <p v-if="getJurusanList(wawancaraSiswa).length === 0" class="text-sm text-gray-500">Belum ada jurusan yang dipilih.</p>
         <p v-if="saveError" class="text-sm text-red-500 mt-2">{{ saveError }}</p>
@@ -228,6 +228,11 @@ function openWawancara(s) {
   }
   wawancaraValues.value = initValues;
   showWawancaraModal.value = true;
+  
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('.wawancara-input');
+    if (inputs.length > 0) inputs[0].focus();
+  }, 100);
 }
 
 async function saveWawancara() {
